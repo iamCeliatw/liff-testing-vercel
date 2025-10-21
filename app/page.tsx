@@ -39,6 +39,8 @@ export default function Home() {
   const handleLogout = () => {
     if (liff.isLoggedIn()) {
       liff.logout();
+      setIsLoggedIn(false);
+      setProfile(null);
     }
   };
 
@@ -52,9 +54,9 @@ export default function Home() {
         {!isLoggedIn ? (
           <button onClick={handleLogin}>Login</button>
         ) : (
-          <div>
+          <div className={styles.userInfo}>
             <h2>User Info</h2>
-            {profile ? (
+            {isLoggedIn && profile ? (
               <>
                 <p>Name: {profile.displayName}</p>
                 <p>User ID: {profile.userId}</p>
