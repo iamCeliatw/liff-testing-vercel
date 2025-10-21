@@ -36,6 +36,12 @@ export default function Home() {
     }
   };
 
+  const handleLogout = () => {
+    if (liff.isLoggedIn()) {
+      liff.logout();
+    }
+  };
+
   return (
     <div className={styles.page}>
       <div className={styles.header}>
@@ -67,6 +73,7 @@ export default function Home() {
             ) : (
               <p>Loading...</p>
             )}
+            <button onClick={handleLogout}>Logout</button>
           </div>
         )}
       </div>
