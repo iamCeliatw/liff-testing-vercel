@@ -1,0 +1,30 @@
+/* Define your size variables */
+$minSizeMobile: 22.5rem; // 360px
+$minSizeTablet: 48rem; // 768px
+$minSizeDesktop: 75rem; // 1200px
+$minSizeAboveDesktop: 90rem; // 1440px
+
+/* Define mixins for media queries */
+@mixin mobile {
+  @media screen and (width < 48rem) {
+    @content;
+  }
+}
+
+@mixin tablet {
+  @media screen and (width >= 48rem) and (width < 75rem) {
+    @content;
+  }
+}
+
+@mixin desktop {
+  @media screen and (width >= 75rem) and (width < 90rem) {
+    @content;
+  }
+}
+
+@mixin above-desktop {
+  @media screen and (width >= 90rem) {
+    @content;
+  }
+}
