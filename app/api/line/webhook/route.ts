@@ -1,4 +1,4 @@
-import { Client, middleware, WebhookEvent } from "@line/bot-sdk";
+import { Client, WebhookEvent } from "@line/bot-sdk";
 import { NextRequest, NextResponse } from "next/server";
 
 const config = {
@@ -22,7 +22,12 @@ export async function POST(request: NextRequest) {
     // 處理每個事件
     await Promise.all(
       events.map(async (event) => {
+        // 印出所有事件
+        console.log("收到事件:", JSON.stringify(event, null, 2));
+
         if (event.type === "message" && event.message.type === "text") {
+          console.log(`用戶 ${event.source.userId} 說: ${event.message.text}`);
+
           // 回覆訊息
           await client.replyMessage(event.replyToken, {
             type: "text",
