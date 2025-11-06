@@ -1,20 +1,59 @@
 "use client";
 import Image from "next/image";
+import liff from "@line/liff";
 import { useLiff } from "@/contexts/LiffContext";
 
 export default function HomeComponent() {
   const { isLoggedIn, profile, login, logout } = useLiff();
 
+  const addFriend = () => {
+    // 開啟加好友視窗
+    if (liff.isInClient()) {
+      liff.openWindow({
+        url: `https://line.me/R/ti/p/${process.env.NEXT_PUBLIC_LINE_BOT_ID}`,
+        external: false,
+      });
+    } else {
+      // 在外部瀏覽器開啟
+      window.open(
+        `https://line.me/R/ti/p/${process.env.NEXT_PUBLIC_LINE_BOT_ID}`,
+        "_blank"
+      );
+    }
+  };
+
   const sendMessage = async () => {
     if (!profile?.userId) return;
 
     try {
+      // 先檢查是否為好友
+      const checkResponse = await fetch("/api/line/check-friendship", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: profile.userId,
+        }),
+      });
+
+      const checkData = await checkResponse.json();
+
+      if (!checkData.isFriend) {
+        const shouldAddFriend = confirm(
+          "請先加入官方帳號好友才能接收訊息！\n是否前往加入好友？"
+        );
+        if (shouldAddFriend) {
+          addFriend();
+        }
+        return;
+      }
+
+      // 是好友，發送訊息
       const response = await fetch("/api/line/send-message", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           userId: profile.userId,
-          message: "Hello from Next.js API!",
+          message: `Hello ${profile.displayName}! 呀哈`,
         }),
       });
 
@@ -56,7 +95,7 @@ export default function HomeComponent() {
             ) : (
               <p>Loading...</p>
             )}
-            <button onClick={sendMessage}>發送測試訊息</button>
+            <button onClick={sendMessage}>發送訊息</button>
             <button onClick={logout}>Logout</button>
           </div>
         )}
