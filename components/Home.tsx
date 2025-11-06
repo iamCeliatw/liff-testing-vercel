@@ -58,7 +58,23 @@ export default function HomeComponent() {
       });
 
       const data = await response.json();
-      alert(data.success ? "訊息已發送！" : "發送失敗");
+
+      if (data.success) {
+        // 訊息發送成功，開啟官方帳號聊天室
+        if (liff.isInClient()) {
+          // 在 LINE 內，直接開啟聊天室並關閉 LIFF
+          liff.openWindow({
+            url: `https://line.me/R/ti/p/${process.env.NEXT_PUBLIC_LINE_BOT_ID}`,
+            external: false,
+          });
+          liff.closeWindow();
+        } else {
+          // 在外部瀏覽器
+          alert("訊息已發送！");
+        }
+      } else {
+        alert("發送失敗");
+      }
     } catch (error) {
       console.error(error);
       alert("發送失敗");
