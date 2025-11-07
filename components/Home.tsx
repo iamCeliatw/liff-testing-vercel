@@ -2,19 +2,21 @@
 import Image from "next/image";
 import liff from "@line/liff";
 import { useLiff } from "@/contexts/LiffContext";
-import { useSearchParams } from "next/navigation";
+
 import { useEffect, useState } from "react";
 
-export default function HomeComponent() {
+export default function HomeComponent({
+  allParams,
+}: {
+  allParams: Record<string, string>;
+}) {
   const { isLoggedIn, profile, login, logout } = useLiff();
   const [paramList, setParamList] = useState<Record<string, string>>({});
   const currentTime = new Date().toLocaleString();
-  const searchParams = useSearchParams();
 
   useEffect(() => {
-    const allParams = Object.fromEntries(searchParams.entries());
     setParamList(allParams);
-  }, [searchParams]);
+  }, [allParams]);
 
   const addFriend = () => {
     // 開啟加好友視窗
