@@ -47,7 +47,17 @@ export default function HomeComponent() {
         return;
       }
 
-      // 訊息發送成功，開啟官方帳號聊天室
+      // 是好友，先發送訊息
+      const response = await fetch("/api/line/send-message", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: profile.userId,
+          message: `Hello ${profile.displayName}! 呀哈`,
+        }),
+      });
+
+      // 訊息發送後，開啟官方帳號聊天室
       if (liff.isInClient()) {
         // 在 LINE 內，直接開啟聊天室並關閉 LIFF
         liff.openWindow({
@@ -55,15 +65,6 @@ export default function HomeComponent() {
           external: false,
         });
         liff.closeWindow();
-        // 是好友，開啟聊天室後發送訊息
-        const response = await fetch("/api/line/send-message", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            userId: profile.userId,
-            message: `Hello ${profile.displayName}! 呀哈`,
-          }),
-        });
       }
     } catch (e: unknown) {
       if (e instanceof Error) {
