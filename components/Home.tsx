@@ -5,7 +5,7 @@ import { useLiff } from "@/contexts/LiffContext";
 
 export default function HomeComponent() {
   const { isLoggedIn, profile, login, logout } = useLiff();
-
+  const currentTime = new Date().toLocaleString();
   const addFriend = () => {
     // 開啟加好友視窗
     if (liff.isInClient()) {
@@ -22,7 +22,24 @@ export default function HomeComponent() {
     }
   };
 
-  const sendMessage = async () => {
+  const sentMessage = async (message: string) => {
+    try {
+      const response = await fetch("/api/line/send-message", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: profile?.userId,
+          message: message,
+        }),
+      });
+      return response.json();
+    } catch (e: unknown) {
+      if (e instanceof Error) {
+        alert("發生錯誤:" + String(e.message));
+      }
+    }
+  };
+  const handleSendMessage = async () => {
     if (!profile?.userId) return;
 
     try {
@@ -47,15 +64,9 @@ export default function HomeComponent() {
         return;
       }
 
-      // 是好友，先發送訊息
-      const response = await fetch("/api/line/send-message", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          userId: profile.userId,
-          message: `Hello ${profile.displayName}! 呀哈`,
-        }),
-      });
+      await sentMessage(
+        `Hello ${profile.displayName}! 您已經是我的好友囉~ ${currentTime}`
+      );
 
       // 訊息發送後，開啟官方帳號聊天室
       if (liff.isInClient()) {
@@ -103,7 +114,7 @@ export default function HomeComponent() {
             ) : (
               <p>Loading...</p>
             )}
-            <button onClick={sendMessage}>發送訊息</button>
+            <button onClick={handleSendMessage}>加入好友</button>
             <button onClick={logout}>Logout</button>
           </div>
         )}
