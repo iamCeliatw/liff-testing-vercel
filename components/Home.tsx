@@ -2,10 +2,20 @@
 import Image from "next/image";
 import liff from "@line/liff";
 import { useLiff } from "@/contexts/LiffContext";
+import { useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
 
 export default function HomeComponent() {
   const { isLoggedIn, profile, login, logout } = useLiff();
+  const [paramList, setParamList] = useState<Record<string, string>>({});
   const currentTime = new Date().toLocaleString();
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    const allParams = Object.fromEntries(searchParams.entries());
+    setParamList(allParams);
+  }, [searchParams]);
+
   const addFriend = () => {
     // 開啟加好友視窗
     if (liff.isInClient()) {
@@ -91,7 +101,14 @@ export default function HomeComponent() {
 
       <div className="content">
         {!isLoggedIn ? (
-          <button onClick={login}>Login</button>
+          <>
+            <button onClick={login}>Login</button>
+            {Object.entries(paramList).map(([key, value]) => (
+              <p key={key}>
+                {key}: {value}
+              </p>
+            ))}
+          </>
         ) : (
           <div className="userInfo">
             <h2>User Info</h2>
