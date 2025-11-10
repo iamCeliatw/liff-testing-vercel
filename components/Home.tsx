@@ -51,7 +51,7 @@ export default function HomeComponent({
       }
     }
   };
-  const handleCheckFriendship = useCallback(async () => {
+  const handleCheckFriendship = async () => {
     if (!profile?.userId) return;
 
     try {
@@ -89,7 +89,7 @@ export default function HomeComponent({
         alert("發生錯誤:" + String(e.message));
       }
     }
-  }, [profile?.userId, addFriend, sentMessage, currentTime]);
+  };
 
   useEffect(() => {
     if (isLoggedIn) {
@@ -97,7 +97,7 @@ export default function HomeComponent({
     } else {
       login();
     }
-  }, [isLoggedIn, handleCheckFriendship, login]);
+  }, [isLoggedIn, login]);
 
   return (
     <div className="page">
