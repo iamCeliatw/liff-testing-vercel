@@ -1,7 +1,6 @@
 import { Client } from "@line/bot-sdk";
 import { NextRequest, NextResponse } from "next/server";
 
-// 初始化 LINE Bot Client
 const client = new Client({
   channelAccessToken: process.env.LINE_CHANNEL_ACCESS_TOKEN || "",
 });
@@ -17,7 +16,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 發送訊息
     await client.pushMessage(userId, {
       type: "text",
       text: message,

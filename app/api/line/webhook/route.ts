@@ -19,28 +19,25 @@ export async function POST(request: NextRequest) {
 
     const events: WebhookEvent[] = JSON.parse(body).events;
 
-    // 處理每個事件
     await Promise.all(
       events.map(async (event) => {
-        // 印出所有事件
-        console.log("收到事件:", JSON.stringify(event, null, 2));
-
-        // 處理加好友事件
         if (event.type === "follow") {
           console.log(`用戶 ${event.source.userId} 加入好友`);
 
-          // 發送歡迎訊息
           await client.replyMessage(event.replyToken, {
             type: "text",
-            text: `歡迎加入！感謝成為我的好友 🎉`,
+            text: `你是不是剛才追蹤了我啊😊`,
+          });
+
+          await client.replyMessage(event.replyToken, {
+            type: "text",
+            text: `追蹤要付錢的喔 每個月100元`,
           });
         }
 
-        // 處理文字訊息
         if (event.type === "message" && event.message.type === "text") {
           console.log(`用戶 ${event.source.userId} 說: ${event.message.text}`);
 
-          // 回覆訊息
           await client.replyMessage(event.replyToken, {
             type: "text",
             text: `你說: ${event.message.text}`,

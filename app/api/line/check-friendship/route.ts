@@ -15,8 +15,6 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
-
-    // 嘗試取得用戶 profile，如果成功代表是好友
     try {
       await client.getProfile(userId);
       return NextResponse.json({
@@ -24,7 +22,6 @@ export async function POST(request: NextRequest) {
         userId,
       });
     } catch {
-      // 無法取得 profile，代表不是好友或 userId 無效
       return NextResponse.json({
         isFriend: false,
         userId,
