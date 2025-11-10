@@ -1,6 +1,12 @@
 "use client";
 import liff from "@line/liff";
-import { createContext, useContext, useEffect, useState } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 
 interface LiffProfile {
   displayName: string;
@@ -42,19 +48,19 @@ export function LiffProvider({ children }: { children: React.ReactNode }) {
       });
   }, []);
 
-  const login = () => {
+  const login = useCallback(() => {
     if (!liff.isLoggedIn()) {
       liff.login();
     }
-  };
+  }, []);
 
-  const logout = () => {
+  const logout = useCallback(() => {
     if (liff.isLoggedIn()) {
       liff.logout();
       setIsLoggedIn(false);
       setProfile(null);
     }
-  };
+  }, []);
 
   return (
     <LiffContext.Provider

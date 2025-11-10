@@ -10,15 +10,14 @@ export default function HomeComponent({
 }: {
   allParams: Record<string, string>;
 }) {
-  const { isLoggedIn, profile, login, logout } = useLiff();
+  const { isInitialized, isLoggedIn, profile, login, logout } = useLiff();
   const [paramList, setParamList] = useState<Record<string, string>>({});
-  const currentTime = new Date().toLocaleString();
   const [isChecked, setIsChecked] = useState(false);
   useEffect(() => {
     setParamList(allParams);
   }, [allParams]);
 
-  const addFriend = () => {
+  const addFriend = useCallback(() => {
     // 開啟加好友視窗
     if (liff.isInClient()) {
       liff.openWindow({
@@ -32,28 +31,31 @@ export default function HomeComponent({
         "_blank"
       );
     }
-  };
+  }, []);
 
-  const sentMessage = async (message: string) => {
-    try {
-      const response = await fetch("/api/line/send-message", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          userId: profile?.userId,
-          message: message,
-        }),
-      });
-      return response.json();
-    } catch (e: unknown) {
-      if (e instanceof Error) {
-        alert("發生錯誤:" + String(e.message));
+  const sentMessage = useCallback(
+    async (message: string) => {
+      try {
+        const response = await fetch("/api/line/send-message", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            userId: profile?.userId,
+            message: message,
+          }),
+        });
+        return response.json();
+      } catch (e: unknown) {
+        if (e instanceof Error) {
+          alert("發生錯誤:" + String(e.message));
+        }
       }
-    }
-  };
-  const handleCheckFriendship = async () => {
+    },
+    [profile?.userId]
+  );
+
+  const handleCheckFriendship = useCallback(async () => {
     if (!profile?.userId) return;
-    setIsChecked(true);
     try {
       // 先檢查是否為好友
       const checkResponse = await fetch("/api/line/check-friendship", {
@@ -71,6 +73,7 @@ export default function HomeComponent({
         return;
       }
 
+      const currentTime = new Date().toLocaleString();
       await sentMessage(
         `Hello ${profile.displayName}! 您已經是我的好友囉~ ${currentTime}`
       );
@@ -89,19 +92,28 @@ export default function HomeComponent({
         alert("發生錯誤:" + String(e.message));
       }
     }
-  };
+  }, [profile?.userId, profile?.displayName, addFriend, sentMessage]);
 
   useEffect(() => {
+    if (!isInitialized) return;
+
     if (!isLoggedIn) {
       login();
       return;
     }
 
-    if (!isChecked) {
+    if (!isChecked && profile?.userId) {
       setIsChecked(true);
       handleCheckFriendship();
     }
-  }, [isLoggedIn, isChecked, login]);
+  }, [
+    isInitialized,
+    isLoggedIn,
+    isChecked,
+    profile?.userId,
+    handleCheckFriendship,
+    login,
+  ]);
 
   return (
     <div className="page">
