@@ -3,7 +3,7 @@ import Image from "next/image";
 import liff from "@line/liff";
 import { useLiff } from "@/contexts/LiffContext";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 export default function HomeComponent({
   allParams,
@@ -51,7 +51,7 @@ export default function HomeComponent({
       }
     }
   };
-  const handleSendMessage = async () => {
+  const handleCheckFriendship = useCallback(async () => {
     if (!profile?.userId) return;
 
     try {
@@ -67,12 +67,7 @@ export default function HomeComponent({
       const checkData = await checkResponse.json();
 
       if (!checkData.isFriend) {
-        const shouldAddFriend = confirm(
-          "請先加入官方帳號好友才能接收訊息！\n是否前往加入好友？"
-        );
-        if (shouldAddFriend) {
-          addFriend();
-        }
+        addFriend();
         return;
       }
 
@@ -94,7 +89,16 @@ export default function HomeComponent({
         alert("發生錯誤:" + String(e.message));
       }
     }
-  };
+  }, [profile?.userId, addFriend, sentMessage, currentTime]);
+
+  useEffect(() => {
+    if (isLoggedIn) {
+      handleCheckFriendship();
+    } else {
+      login();
+    }
+  }, [isLoggedIn, handleCheckFriendship, login]);
+
   return (
     <div className="page">
       <div className="header">
@@ -133,7 +137,7 @@ export default function HomeComponent({
             ) : (
               <p>Loading...</p>
             )}
-            <button onClick={handleSendMessage}>加入好友</button>
+
             <button onClick={logout}>Logout</button>
           </div>
         )}
