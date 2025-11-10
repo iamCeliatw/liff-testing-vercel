@@ -156,32 +156,7 @@ export default function HomeComponent({
               </p>
             ))}
           </>
-        ) : (
-          <div className="userInfo">
-            <h2>User Info</h2>
-            {profile ? (
-              <>
-                <p>Name: {profile.displayName}</p>
-                <p>User ID: {profile.userId}</p>
-                {profile.pictureUrl && (
-                  <>
-                    <p>Picture:</p>
-                    <Image
-                      src={profile.pictureUrl}
-                      alt="profile"
-                      width={100}
-                      height={100}
-                    />
-                  </>
-                )}
-              </>
-            ) : (
-              <p>Loading...</p>
-            )}
-
-            <button onClick={logout}>Logout</button>
-          </div>
-        )}
+        ) : null}
       </div>
     </div>
   );
