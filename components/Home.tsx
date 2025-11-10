@@ -62,21 +62,13 @@ export default function HomeComponent({
     setIsLoading(true);
     try {
       // 先檢查是否為好友
-      const checkResponse = await fetch("/api/line/check-friendship", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          userId: profile.userId,
-        }),
+      liff.getFriendship().then((friendship) => {
+        if (!friendship.friendFlag) {
+          setIsLoading(false);
+          addFriend();
+          return;
+        }
       });
-
-      const checkData = await checkResponse.json();
-
-      if (!checkData.isFriend) {
-        setIsLoading(false);
-        addFriend();
-        return;
-      }
 
       const currentTime = new Date().toLocaleString();
       await sentMessage(
