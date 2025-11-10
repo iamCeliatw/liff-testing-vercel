@@ -2,6 +2,8 @@
 import Image from "next/image";
 import liff from "@line/liff";
 import { useLiff } from "@/contexts/LiffContext";
+import Lottie from "lottie-react";
+import loadingAnimation from "@/public/loading.json";
 
 import { useCallback, useEffect, useState } from "react";
 
@@ -13,6 +15,7 @@ export default function HomeComponent({
   const { isInitialized, isLoggedIn, profile, login, logout } = useLiff();
   const [paramList, setParamList] = useState<Record<string, string>>({});
   const [isChecked, setIsChecked] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   useEffect(() => {
     setParamList(allParams);
   }, [allParams]);
@@ -56,6 +59,7 @@ export default function HomeComponent({
 
   const handleCheckFriendship = useCallback(async () => {
     if (!profile?.userId) return;
+    setIsLoading(true);
     try {
       // 先檢查是否為好友
       const checkResponse = await fetch("/api/line/check-friendship", {
@@ -69,6 +73,7 @@ export default function HomeComponent({
       const checkData = await checkResponse.json();
 
       if (!checkData.isFriend) {
+        setIsLoading(false);
         addFriend();
         return;
       }
@@ -86,8 +91,12 @@ export default function HomeComponent({
           external: false,
         });
         liff.closeWindow();
+      } else {
+        console.log("在外部瀏覽器");
+        setIsLoading(false);
       }
     } catch (e: unknown) {
+      setIsLoading(false);
       if (e instanceof Error) {
         alert("發生錯誤:" + String(e.message));
       }
@@ -98,6 +107,7 @@ export default function HomeComponent({
     if (!isInitialized) return;
 
     if (!isLoggedIn) {
+      setIsLoading(false);
       login();
       return;
     }
@@ -122,7 +132,22 @@ export default function HomeComponent({
       </div>
 
       <div className="content">
-        {!isLoggedIn ? (
+        {!isInitialized || isLoading ? (
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              minHeight: "200px",
+            }}
+          >
+            <Lottie
+              animationData={loadingAnimation}
+              loop={true}
+              style={{ width: 200, height: 150 }}
+            />
+          </div>
+        ) : !isLoggedIn ? (
           <>
             <button onClick={login}>Login</button>
             {Object.entries(paramList).map(([key, value]) => (
