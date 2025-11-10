@@ -13,7 +13,7 @@ export default function HomeComponent({
   const { isLoggedIn, profile, login, logout } = useLiff();
   const [paramList, setParamList] = useState<Record<string, string>>({});
   const currentTime = new Date().toLocaleString();
-
+  const [isChecked, setIsChecked] = useState(false);
   useEffect(() => {
     setParamList(allParams);
   }, [allParams]);
@@ -53,7 +53,7 @@ export default function HomeComponent({
   };
   const handleCheckFriendship = async () => {
     if (!profile?.userId) return;
-
+    setIsChecked(true);
     try {
       // 先檢查是否為好友
       const checkResponse = await fetch("/api/line/check-friendship", {
@@ -92,12 +92,16 @@ export default function HomeComponent({
   };
 
   useEffect(() => {
-    if (isLoggedIn) {
-      handleCheckFriendship();
-    } else {
+    if (!isLoggedIn) {
       login();
+      return;
     }
-  }, [isLoggedIn, login]);
+
+    if (!isChecked) {
+      setIsChecked(true);
+      handleCheckFriendship();
+    }
+  }, [isLoggedIn, isChecked, login]);
 
   return (
     <div className="page">
