@@ -60,18 +60,21 @@ export default function HomeComponent({
     if (!profile?.userId) return;
     setIsLoading(true);
     try {
-      const friendship = await liff.getFriendship();
-      if (!friendship.friendFlag) {
-        setIsLoading(false);
-        addFriend();
-        return;
-      }
+      // 先檢查是否為好友
+      liff.getFriendship().then((friendship) => {
+        if (!friendship.friendFlag) {
+          setIsLoading(false);
+          addFriend();
+          return;
+        }
+      });
 
       const currentTime = new Date().toLocaleString();
       await sentMessage(
         `Hello ${profile.displayName}! 您已經是我的好友囉~ ${currentTime}`
       );
 
+      // 訊息發送後，開啟官方帳號聊天室
       if (liff.isInClient()) {
         openChat();
       }
