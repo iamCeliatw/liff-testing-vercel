@@ -1,5 +1,4 @@
 "use client";
-import Image from "next/image";
 import liff from "@line/liff";
 import { useLiff } from "@/contexts/LiffContext";
 import Lottie from "lottie-react";
@@ -12,7 +11,7 @@ export default function HomeComponent({
 }: {
   allParams: Record<string, string>;
 }) {
-  const { isInitialized, isLoggedIn, profile, login, logout } = useLiff();
+  const { isInitialized, isLoggedIn, profile, login } = useLiff();
   const [paramList, setParamList] = useState<Record<string, string>>({});
   const [isChecked, setIsChecked] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -61,31 +60,20 @@ export default function HomeComponent({
     if (!profile?.userId) return;
     setIsLoading(true);
     try {
-      // 先檢查是否為好友
-      liff.getFriendship().then((friendship) => {
-        if (!friendship.friendFlag) {
-          setIsLoading(false);
-          addFriend();
-          return;
-        }
-      });
+      const friendship = await liff.getFriendship();
+      if (!friendship.friendFlag) {
+        setIsLoading(false);
+        addFriend();
+        return;
+      }
 
       const currentTime = new Date().toLocaleString();
       await sentMessage(
         `Hello ${profile.displayName}! 您已經是我的好友囉~ ${currentTime}`
       );
 
-      // 訊息發送後，開啟官方帳號聊天室
       if (liff.isInClient()) {
-        // 在 LINE 內，直接開啟聊天室並關閉 LIFF
-        liff.openWindow({
-          url: `https://line.me/R/ti/p/${process.env.NEXT_PUBLIC_LINE_BOT_ID}`,
-          external: false,
-        });
-        liff.closeWindow();
-      } else {
-        console.log("在外部瀏覽器");
-        setIsLoading(false);
+        openChat();
       }
     } catch (e: unknown) {
       setIsLoading(false);
@@ -94,6 +82,13 @@ export default function HomeComponent({
       }
     }
   }, [profile?.userId, profile?.displayName, addFriend, sentMessage]);
+
+  const openChat = useCallback(() => {
+    liff.openWindow({
+      url: `https://line.me/R/ti/p/${process.env.NEXT_PUBLIC_LINE_BOT_ID}`,
+      external: false,
+    });
+  }, []);
 
   useEffect(() => {
     if (!isInitialized) return;
@@ -125,14 +120,7 @@ export default function HomeComponent({
 
       <div className="content">
         {!isInitialized || isLoading ? (
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              minHeight: "200px",
-            }}
-          >
+          <div className="loading">
             <Lottie
               animationData={loadingAnimation}
               loop={true}
