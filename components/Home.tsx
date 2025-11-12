@@ -13,12 +13,17 @@ export default function HomeComponent({
 }) {
   const { isInitialized, isLoggedIn, profile, login } = useLiff();
   const [paramList, setParamList] = useState<Record<string, string>>({});
-  const [isChecked, setIsChecked] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [hintOpenChatMessage, setHintOpenChatMessage] = useState("");
+  const [isMounted, setIsMounted] = useState(false);
+  const [isChecked, setIsChecked] = useState(false);
   useEffect(() => {
     setParamList(allParams);
   }, [allParams]);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   const addFriend = useCallback(() => {
     // 開啟加好友視窗
@@ -61,14 +66,6 @@ export default function HomeComponent({
     if (!profile?.userId) return;
     setIsLoading(true);
     try {
-      // 先檢查是否為好友
-      // liff.getFriendship().then((friendship) => {
-      //   if (!friendship.friendFlag) {
-      //     setIsLoading(false);
-      //     addFriend();
-      //     return;
-      //   }
-      // });
       const friendship = await liff.getFriendship();
       if (!friendship?.friendFlag) {
         setIsLoading(false);
@@ -103,6 +100,40 @@ export default function HomeComponent({
     });
   }, []);
 
+  const handlePay = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      const orderId = `ORDER_${Date.now()}`;
+
+      const response = await fetch("/api/line/payment/request", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          amount: 100, // 金額
+          orderId,
+          productName: "測試商品",
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.returnCode === "0000") {
+        // 導向到 LINE Pay 付款頁面
+        window.location.href = data.info.paymentUrl.web;
+      } else {
+        alert("付款請求失敗: " + data.returnMessage);
+      }
+    } catch (error) {
+      alert("發生錯誤: " + String(error));
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!isInitialized || !liff.isInClient()) setIsLoading(false);
+    return;
+  }, [isInitialized]);
   useEffect(() => {
     if (!isInitialized) return;
 
@@ -132,25 +163,30 @@ export default function HomeComponent({
       </div>
 
       <div className="content">
+        {/* parameter list */}
+        <div className="parameterList">
+          {Object.entries(paramList).map(([key, value]) => (
+            <p key={key}>
+              {key}: {value}
+            </p>
+          ))}
+        </div>
+        {!isInitialized ||
+          (isLoading && (
+            <div className="loading">
+              <Lottie
+                animationData={loadingAnimation}
+                loop={true}
+                style={{ width: 200, height: 150 }}
+              />
+            </div>
+          ))}
+
         {hintOpenChatMessage && <p>{hintOpenChatMessage}</p>}
-        {!isInitialized || isLoading ? (
-          <div className="loading">
-            <Lottie
-              animationData={loadingAnimation}
-              loop={true}
-              style={{ width: 200, height: 150 }}
-            />
-          </div>
-        ) : !isLoggedIn ? (
-          <>
-            <button onClick={login}>Login</button>
-            {Object.entries(paramList).map(([key, value]) => (
-              <p key={key}>
-                {key}: {value}
-              </p>
-            ))}
-          </>
-        ) : null}
+
+        {isMounted && !liff.isInClient() && (
+          <button onClick={handlePay}>PAY</button>
+        )}
       </div>
     </div>
   );
