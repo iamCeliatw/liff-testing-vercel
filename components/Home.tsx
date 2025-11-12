@@ -15,6 +15,7 @@ export default function HomeComponent({
   const [paramList, setParamList] = useState<Record<string, string>>({});
   const [isChecked, setIsChecked] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [hintOpenChatMessage, setHintOpenChatMessage] = useState("");
   useEffect(() => {
     setParamList(allParams);
   }, [allParams]);
@@ -61,13 +62,19 @@ export default function HomeComponent({
     setIsLoading(true);
     try {
       // 先檢查是否為好友
-      liff.getFriendship().then((friendship) => {
-        if (!friendship.friendFlag) {
-          setIsLoading(false);
-          addFriend();
-          return;
-        }
-      });
+      // liff.getFriendship().then((friendship) => {
+      //   if (!friendship.friendFlag) {
+      //     setIsLoading(false);
+      //     addFriend();
+      //     return;
+      //   }
+      // });
+      const friendship = await liff.getFriendship();
+      if (!friendship?.friendFlag) {
+        setIsLoading(false);
+        addFriend();
+        return;
+      }
 
       const currentTime = new Date().toLocaleString();
       await sentMessage(
@@ -77,6 +84,9 @@ export default function HomeComponent({
       // 訊息發送後，開啟官方帳號聊天室
       if (liff.isInClient()) {
         openChat();
+      } else {
+        setIsLoading(false);
+        setHintOpenChatMessage("請開啟手機查看");
       }
     } catch (e: unknown) {
       setIsLoading(false);
@@ -122,6 +132,7 @@ export default function HomeComponent({
       </div>
 
       <div className="content">
+        {hintOpenChatMessage && <p>{hintOpenChatMessage}</p>}
         {!isInitialized || isLoading ? (
           <div className="loading">
             <Lottie
