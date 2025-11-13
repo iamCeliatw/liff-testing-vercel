@@ -1,10 +1,11 @@
 "use client";
 import liff from "@line/liff";
 import { useLiff } from "@/contexts/LiffContext";
-import Lottie from "lottie-react";
-import loadingAnimation from "@/public/loading.json";
-
+// import Lottie from "lottie-react";
+// import loadingAnimation from "@/public/loading.json";
+import loadingAnimation from "@/public/loading_animation.svg";
 import { useCallback, useEffect, useState } from "react";
+import Image from "next/image";
 
 export default function HomeComponent({
   allParams,
@@ -134,6 +135,7 @@ export default function HomeComponent({
     if (!isInitialized || !liff.isInClient()) setIsLoading(false);
     return;
   }, [isInitialized]);
+
   useEffect(() => {
     if (!isInitialized) return;
 
@@ -174,19 +176,26 @@ export default function HomeComponent({
         {!isInitialized ||
           (isLoading && (
             <div className="loading">
-              <Lottie
+              {/* <Lottie
                 animationData={loadingAnimation}
                 loop={true}
                 style={{ width: 200, height: 150 }}
+              /> */}
+              <Image
+                priority={true}
+                src={loadingAnimation}
+                alt="loading"
+                width={370}
+                height={370}
               />
             </div>
           ))}
 
         {hintOpenChatMessage && <p>{hintOpenChatMessage}</p>}
 
-        {isMounted && !liff.isInClient() && (
+        {/* {isMounted && !liff.isInClient() && (
           <button onClick={handlePay}>PAY</button>
-        )}
+        )} */}
       </div>
     </div>
   );
