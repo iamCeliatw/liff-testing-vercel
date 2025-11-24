@@ -50,7 +50,9 @@ export function LiffProvider({ children }: { children: React.ReactNode }) {
 
   const login = useCallback(() => {
     if (!liff.isLoggedIn()) {
-      liff.login();
+      // 保留當前 URL 的 query parameters (包括 token)
+      const currentUrl = window.location.href;
+      liff.login({ redirectUri: currentUrl });
     }
   }, []);
 

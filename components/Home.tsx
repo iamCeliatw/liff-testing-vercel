@@ -1,12 +1,10 @@
 "use client";
 import liff from "@line/liff";
 import { useLiff } from "@/contexts/LiffContext";
-// import Lottie from "lottie-react";
-// import loadingAnimation from "@/public/loading.json";
 import loadingAnimation from "@/public/loading_animation.svg";
 import { useCallback, useEffect, useState } from "react";
 import Image from "next/image";
-
+import { callApi } from "@/utils/api";
 export default function HomeComponent({
   allParams,
 }: {
@@ -16,15 +14,12 @@ export default function HomeComponent({
   const [paramList, setParamList] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(true);
   const [hintOpenChatMessage, setHintOpenChatMessage] = useState("");
-  const [isMounted, setIsMounted] = useState(false);
   const [isChecked, setIsChecked] = useState(false);
+  const mgmcode = allParams.mgmcode; // 從 URL 參數取得 mgmcode
+
   useEffect(() => {
     setParamList(allParams);
   }, [allParams]);
-
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
 
   const addFriend = useCallback(() => {
     // 開啟加好友視窗
@@ -42,25 +37,34 @@ export default function HomeComponent({
     }
   }, []);
 
+  const openChat = useCallback(() => {
+    liff.openWindow({
+      url: `https://line.me/R/ti/p/${process.env.NEXT_PUBLIC_LINE_BOT_ID}`,
+      external: false,
+    });
+  }, []);
+
   const sentMessage = useCallback(
     async (message: string) => {
       try {
-        const response = await fetch("/api/line/send-message", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
+        const response = await callApi(
+          "/api/line/send-message",
+          "POST",
+          {
             userId: profile?.userId,
             message: message,
-          }),
-        });
-        return response.json();
+          },
+          mgmcode
+        );
+        return response;
       } catch (e: unknown) {
         if (e instanceof Error) {
           alert("發生錯誤:" + String(e.message));
         }
+        throw e;
       }
     },
-    [profile?.userId]
+    [profile?.userId, mgmcode]
   );
 
   const handleCheckFriendship = useCallback(async () => {
@@ -92,14 +96,25 @@ export default function HomeComponent({
         alert("發生錯誤:" + String(e.message));
       }
     }
-  }, [profile?.userId, profile?.displayName, addFriend, sentMessage]);
+  }, [profile?.userId, profile?.displayName, addFriend, sentMessage, openChat]);
 
-  const openChat = useCallback(() => {
-    liff.openWindow({
-      url: `https://line.me/R/ti/p/${process.env.NEXT_PUBLIC_LINE_BOT_ID}`,
-      external: false,
-    });
-  }, []);
+  const testApiCall = useCallback(async () => {
+    try {
+      const response = await callApi(
+        "/api/test",
+        "POST",
+        {
+          userId: profile?.userId,
+          displayName: profile?.displayName,
+          message: "Line 登入成功測試",
+        },
+        mgmcode
+      );
+      console.log("測試 API 回應:", response);
+    } catch (error) {
+      console.error("測試 API 錯誤:", error);
+    }
+  }, [profile?.userId, profile?.displayName, mgmcode]);
 
   const handlePay = useCallback(async () => {
     try {
@@ -141,12 +156,13 @@ export default function HomeComponent({
 
     if (!isLoggedIn) {
       setIsLoading(false);
-      login();
+      // login();
       return;
     }
 
     if (!isChecked && profile?.userId) {
       setIsChecked(true);
+      testApiCall(); // 登入後打測試 API
       handleCheckFriendship();
     }
   }, [
@@ -155,6 +171,7 @@ export default function HomeComponent({
     isChecked,
     profile?.userId,
     handleCheckFriendship,
+    testApiCall,
     login,
   ]);
 
@@ -176,11 +193,6 @@ export default function HomeComponent({
         {!isInitialized ||
           (isLoading && (
             <div className="loading">
-              {/* <Lottie
-                animationData={loadingAnimation}
-                loop={true}
-                style={{ width: 200, height: 150 }}
-              /> */}
               <Image
                 priority={true}
                 src={loadingAnimation}
