@@ -156,7 +156,7 @@ export default function HomeComponent({
 
     if (!isLoggedIn) {
       setIsLoading(false);
-      // login();
+      login();
       return;
     }
 
