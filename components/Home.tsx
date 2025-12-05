@@ -69,6 +69,15 @@ export default function HomeComponent({
 
   const handleCheckFriendship = useCallback(async () => {
     if (!profile?.userId) return;
+
+    // 檢查是否已經處理過，避免循環
+    const storageKey = `liff_checked_${profile.userId}`;
+    const hasChecked = sessionStorage.getItem(storageKey);
+    if (hasChecked) {
+      setIsLoading(false);
+      return;
+    }
+
     setIsLoading(true);
     try {
       const friendship = await liff.getFriendship();
@@ -82,6 +91,8 @@ export default function HomeComponent({
       await sentMessage(
         `Hello ${profile.displayName}! 您已經是我的好友囉~ ${currentTime}`
       );
+      // 標記已處理，避免循環
+      sessionStorage.setItem(storageKey, "true");
 
       // 訊息發送後，開啟官方帳號聊天室
       if (liff.isInClient()) {
@@ -93,7 +104,7 @@ export default function HomeComponent({
           "_blank"
         );
         setIsLoading(false);
-        setHintOpenChatMessage("請開啟手機查看");
+        setHintOpenChatMessage("已開啟聊天室");
       }
     } catch (e: unknown) {
       setIsLoading(false);
