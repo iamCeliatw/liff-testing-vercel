@@ -99,10 +99,7 @@ export default function HomeComponent({
         openChat();
       } else {
         // 在外部瀏覽器也開啟聊天室
-        window.open(
-          `https://line.me/R/ti/p/${process.env.NEXT_PUBLIC_LINE_BOT_ID}`,
-          "_blank"
-        );
+        window.location.href = `https://line.me/R/ti/p/${process.env.NEXT_PUBLIC_LINE_BOT_ID}`;
         setIsLoading(false);
         setHintOpenChatMessage("已開啟聊天室");
       }
