@@ -87,6 +87,11 @@ export default function HomeComponent({
       if (liff.isInClient()) {
         openChat();
       } else {
+        // 在外部瀏覽器也開啟聊天室
+        window.open(
+          `https://line.me/R/ti/p/${process.env.NEXT_PUBLIC_LINE_BOT_ID}`,
+          "_blank"
+        );
         setIsLoading(false);
         setHintOpenChatMessage("請開啟手機查看");
       }
