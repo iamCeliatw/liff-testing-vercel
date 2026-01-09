@@ -21,20 +21,19 @@ export async function POST(request: NextRequest) {
 
     await Promise.all(
       events.map(async (event) => {
-        if (event.type === "follow") {
-          console.log(`用戶 ${event.source.userId} 加入好友`);
-
-          await client.replyMessage(event.replyToken, [
-            {
-              type: "text",
-              text: `你是不是剛才追蹤了我啊😊`,
-            },
-            {
-              type: "text",
-              text: `追蹤要付錢的喔 每個月100元`,
-            },
-          ]);
-        }
+        // if (event.type === "follow") {
+        // console.log(`用戶 ${event.source.userId} 加入好友`);
+        // await client.replyMessage(event.replyToken, [
+        //   {
+        //     type: "text",
+        //     text: `你是不是剛才追蹤了我啊😊`,
+        //   },
+        //   {
+        //     type: "text",
+        //     text: `追蹤要付錢的喔 每個月100元`,
+        //   },
+        // ]);
+        // }
 
         if (event.type === "message" && event.message.type === "text") {
           console.log(`用戶 ${event.source.userId} 說: ${event.message.text}`);
